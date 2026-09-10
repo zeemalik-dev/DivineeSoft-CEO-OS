@@ -1,0 +1,487 @@
+// DivineeSoft CEO OS — data model
+// Postgres + Prisma. Every mutation that matters lands in AuditLog and ActivityEvent.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────── identity & org ───────────────────────────
+
+enum SystemRole {
+  CEO
+  MANAGER
+  EMPLOYEE
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  name         String
+  passwordHash String
+  systemRole   SystemRole @default(EMPLOYEE)
+  isActive     Boolean    @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  employee       Employee?
+  createdTasks   Task[]           @relation("TaskCreatedBy")
+  approvedTasks  Task[]           @relation("TaskApprover")
+  taskUpdates    TaskUpdate[]
+  auditLogs      AuditLog[]
+  notifications  Notification[]
+  conversations  AiConversation[]
+  ideas          Idea[]
+  problems       Problem[]        @relation("ProblemReporter")
+  ownedProblems  Problem[]        @relation("ProblemOwner")
+  solutions      Solution[]
+  calendarEvents CalendarEvent[]
+  reminders      Reminder[]
+
+  @@index([systemRole, isActive])
+}
+
+model Employee {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title            String
+  department       String?
+  phone            String?
+  responsibilities String[]
+  timezone         String   @default("Asia/Karachi")
+  isActive         Boolean  @default(true)
+  joinedAt         DateTime @default(now())
+
+  reportsToId String?
+  reportsTo   Employee?  @relation("Reporting", fields: [reportsToId], references: [id])
+  reports     Employee[] @relation("Reporting")
+
+  assignedTasks   Task[]          @relation("TaskAssignee")
+  memberships     ProjectMember[]
+  ledProjects     Project[]       @relation("ProjectLead")
+  managedProjects Project[]       @relation("ProjectManager")
+  dailyUpdates    DailyUpdate[]
+
+  @@index([reportsToId])
+}
+
+// ─────────────────────────── projects ───────────────────────────
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  BLOCKED
+  COMPLETED
+  ARCHIVED
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  slug        String        @unique
+  description String?
+  platforms   String[]
+  status      ProjectStatus @default(ACTIVE)
+  healthNote  String?
+  startedAt   DateTime?
+  dueDate     DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  leadId    String?
+  lead      Employee? @relation("ProjectLead", fields: [leadId], references: [id])
+  managerId String?
+  manager   Employee? @relation("ProjectManager", fields: [managerId], references: [id])
+
+  members ProjectMember[]
+  tasks   Task[]
+
+  @@index([status])
+}
+
+model ProjectMember {
+  id            String   @id @default(cuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  employeeId    String
+  employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  roleOnProject String   @default("Contributor")
+  addedAt       DateTime @default(now())
+
+  @@unique([projectId, employeeId])
+}
+
+// ─────────────────────────── tasks ───────────────────────────
+
+enum TaskStatus {
+  NOT_STARTED
+  STARTED
+  IN_PROGRESS
+  WAITING_FOR_REVIEW
+  BLOCKED
+  COMPLETED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ApprovalState {
+  APPROVED
+  PENDING_APPROVAL
+  REJECTED
+}
+
+enum TaskSource {
+  HUMAN
+  AI_ASSISTANT
+  AUTOMATION
+}
+
+enum TaskKind {
+  TEAM
+  CEO_PERSONAL
+}
+
+model Task {
+  id               String     @id @default(cuid())
+  title            String
+  description      String?
+  kind             TaskKind   @default(TEAM)
+  status           TaskStatus @default(NOT_STARTED)
+  priority         Priority   @default(MEDIUM)
+  progress         Int        @default(0)
+  estimatedMinutes Int?
+  dueDate          DateTime?
+  scheduledFor     DateTime?
+  startedAt        DateTime?
+  completedAt      DateTime?
+  blockerNote      String?
+  tags             String[]
+
+  isRecurring    Boolean   @default(false)
+  recurrenceRule String? // DAILY | WEEKDAYS | WEEKLY:MON | MONTHLY:1
+  lastSpawnedAt  DateTime?
+
+  source        TaskSource    @default(HUMAN)
+  approvalState ApprovalState @default(APPROVED)
+  aiRationale   String?
+  approvedById  String?
+  approvedBy    User?         @relation("TaskApprover", fields: [approvedById], references: [id])
+  approvedAt    DateTime?
+
+  projectId   String?
+  project     Project?  @relation(fields: [projectId], references: [id])
+  assigneeId  String?
+  assignee    Employee? @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  createdById String
+  createdBy   User      @relation("TaskCreatedBy", fields: [createdById], references: [id])
+
+  updates   TaskUpdate[]
+  reminders Reminder[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([assigneeId, status])
+  @@index([projectId, status])
+  @@index([dueDate])
+  @@index([scheduledFor])
+  @@index([approvalState])
+}
+
+enum TaskUpdateType {
+  COMMENT
+  STATUS_CHANGE
+  PROGRESS
+  BLOCKER
+  BLOCKER_CLEARED
+  ASSIGNMENT
+}
+
+model TaskUpdate {
+  id         String         @id @default(cuid())
+  taskId     String
+  task       Task           @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  authorId   String
+  author     User           @relation(fields: [authorId], references: [id])
+  type       TaskUpdateType
+  message    String?
+  fromStatus TaskStatus?
+  toStatus   TaskStatus?
+  progress   Int?
+  createdAt  DateTime       @default(now())
+
+  @@index([taskId, createdAt])
+}
+
+model DailyUpdate {
+  id         String   @id @default(cuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  forDate    DateTime @db.Date
+  didToday   String
+  planNext   String?
+  blockers   String?
+  moodScore  Int?
+  createdAt  DateTime @default(now())
+
+  @@unique([employeeId, forDate])
+}
+
+// ─────────────────────────── CEO workspace ───────────────────────────
+
+enum IdeaStatus {
+  CAPTURED
+  EXPLORING
+  APPROVED
+  PARKED
+  DISCARDED
+  SHIPPED
+}
+
+model Idea {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  category    String?
+  status      IdeaStatus @default(CAPTURED)
+  priority    Priority   @default(MEDIUM)
+  authorId    String
+  author      User       @relation(fields: [authorId], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([status])
+}
+
+enum ProblemStatus {
+  OPEN
+  INVESTIGATING
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model Problem {
+  id           String        @id @default(cuid())
+  title        String
+  description  String?
+  category     String?
+  severity     Severity      @default(MEDIUM)
+  status       ProblemStatus @default(OPEN)
+  reportedById String
+  reportedBy   User          @relation("ProblemReporter", fields: [reportedById], references: [id])
+  ownerId      String?
+  owner        User?         @relation("ProblemOwner", fields: [ownerId], references: [id])
+  createdAt    DateTime      @default(now())
+  resolvedAt   DateTime?
+  solutions    Solution[]
+
+  @@index([status, severity])
+}
+
+model Solution {
+  id          String   @id @default(cuid())
+  problemId   String
+  problem     Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  description String
+  isChosen    Boolean  @default(false)
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+enum CalendarEventType {
+  MEETING
+  PROJECT_REVIEW
+  DEADLINE
+  FOCUS_BLOCK
+  OTHER
+}
+
+model CalendarEvent {
+  id        String            @id @default(cuid())
+  title     String
+  notes     String?
+  type      CalendarEventType @default(MEETING)
+  startsAt  DateTime
+  endsAt    DateTime?
+  location  String?
+  ownerId   String
+  owner     User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt DateTime          @default(now())
+
+  @@index([ownerId, startsAt])
+}
+
+model Reminder {
+  id        String    @id @default(cuid())
+  message   String
+  remindAt  DateTime
+  sentAt    DateTime?
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskId    String?
+  task      Task?     @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  createdAt DateTime  @default(now())
+
+  @@index([remindAt, sentAt])
+}
+
+// ─────────────────────────── notifications & automation ───────────────────────────
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String?
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+}
+
+model AutomationRule {
+  id          String   @id @default(cuid())
+  key         String   @unique // daily_briefing, ai_autoassign, overdue_alerts...
+  name        String
+  description String?
+  enabled     Boolean  @default(true)
+  // When autoAssign is false, anything the AI creates lands as PENDING_APPROVAL.
+  autoAssign  Boolean  @default(false)
+  config      Json     @default("{}")
+  updatedAt   DateTime @updatedAt
+}
+
+model JobRun {
+  id         String    @id @default(cuid())
+  jobKey     String
+  runKey     String // e.g. 2026-09-09 — makes cron idempotent
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  ok         Boolean   @default(false)
+  detail     Json?
+
+  @@unique([jobKey, runKey])
+}
+
+enum EmailStatus {
+  QUEUED
+  SENT
+  FAILED
+  LOGGED_ONLY
+}
+
+model EmailLog {
+  id        String      @id @default(cuid())
+  to        String
+  subject   String
+  template  String
+  status    EmailStatus @default(QUEUED)
+  error     String?
+  html      String?
+  createdAt DateTime    @default(now())
+
+  @@index([createdAt])
+}
+
+// ─────────────────────────── AI ───────────────────────────
+
+model AiConversation {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String      @default("New conversation")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  messages  AiMessage[]
+  actions   AiAction[]
+
+  @@index([userId, updatedAt])
+}
+
+model AiMessage {
+  id             String         @id @default(cuid())
+  conversationId String
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String // user | assistant
+  content        Json // full Anthropic content blocks
+  createdAt      DateTime       @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+enum AiActionStatus {
+  EXECUTED
+  AWAITING_CONFIRMATION
+  CONFIRMED
+  REJECTED
+  FAILED
+  DENIED
+}
+
+model AiAction {
+  id             String          @id @default(cuid())
+  conversationId String?
+  conversation   AiConversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  actorUserId    String
+  tool           String
+  input          Json
+  output         Json?
+  status         AiActionStatus  @default(EXECUTED)
+  error          String?
+  createdAt      DateTime        @default(now())
+
+  @@index([actorUserId, createdAt])
+}
+
+// ─────────────────────────── audit & realtime ───────────────────────────
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action     String // task.create, task.status, auth.login...
+  entityType String
+  entityId   String?
+  metadata   Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+// Append-only feed the SSE endpoint tails. Works across serverless instances,
+// unlike an in-process event emitter.
+model ActivityEvent {
+  id         BigInt   @id @default(autoincrement())
+  type       String // task.started, task.progress, task.blocked, daily_update.created...
+  actorName  String?
+  summary    String
+  entityType String?
+  entityId   String?
+  payload    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+}
