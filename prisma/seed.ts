@@ -198,8 +198,17 @@ async function main() {
       },
       include: { employee: true },
     });
+    const employee = user.employee ?? await prisma.employee.create({
+      data: {
+        userId: user.id,
+        title: person.title,
+        department: person.department,
+        phone: person.phone,
+        responsibilities: person.responsibilities,
+      },
+    });
     userIds.set(person.key, user.id);
-    employeeIds.set(person.key, user.employee!.id);
+    employeeIds.set(person.key, employee.id);
   }
 
   for (const person of people) {
@@ -324,7 +333,7 @@ async function main() {
     },
     {
       title: "Document the deployment steps for both backends",
-      project: "BarberzLink Backend & Server Deployment",
+      project: "BarberzLink Backend and Server Deployments",
       assignee: "arslan",
       priority: "MEDIUM",
       dueInDays: 5,
@@ -332,7 +341,7 @@ async function main() {
     },
     {
       title: "Publish the DivineeSoft site content pass",
-      project: "DivineeSoft Website",
+      project: "DivineeSoft Websites",
       assignee: "hassaan",
       priority: "MEDIUM",
       dueInDays: 7,
@@ -340,7 +349,7 @@ async function main() {
     },
     {
       title: "Rewrite the Upwork profile headline and portfolio",
-      project: "Upwork Growth, Bidding & Optimization",
+      project: "Upwork Growth Bidding and Optimization",
       assignee: "adila",
       priority: "HIGH",
       dueInDays: 4,
