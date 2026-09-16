@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useLoginMutation } from "@/redux/api/authApi";
 
 export function LoginForm() {
   const router = useRouter();
@@ -9,28 +10,17 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+
+  const [login, { isLoading: busy }] = useLoginMutation();
 
   async function submit() {
-    setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Sign in failed.");
-        return;
-      }
+      const data = await login({ email, password }).unwrap();
       router.push(data.role === "CEO" ? "/dashboard" : "/my-tasks");
       router.refresh();
-    } catch {
-      setError("Could not reach the server. Check your connection and try again.");
-    } finally {
-      setBusy(false);
+    } catch (err: any) {
+      setError(err?.data?.error ?? "Sign in failed. Check your credentials and try again.");
     }
   }
 

@@ -21,11 +21,12 @@ export default async function MyTasksPage() {
       include: { project: { select: { name: true } } },
       orderBy: [{ status: "asc" }, { priority: "desc" }, { dueDate: "asc" }],
       take: 100,
+      skip: 1
     }),
     user.employeeId
       ? prisma.dailyUpdate.findUnique({
-          where: { employeeId_forDate: { employeeId: user.employeeId, forDate: localDateOnly() } },
-        })
+        where: { employeeId_forDate: { employeeId: user.employeeId, forDate: localDateOnly() } },
+      })
       : null,
   ]);
 
