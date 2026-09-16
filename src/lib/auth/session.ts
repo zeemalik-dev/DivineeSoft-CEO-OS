@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import { env } from "@/lib/env";
@@ -63,8 +64,8 @@ export async function readSession(): Promise<SessionUser | null> {
   }
 }
 
-/** Session plus a liveness check against the database (deactivated users lose access instantly). */
-export async function currentUser(): Promise<SessionUser | null> {
+/** Session plus a liveness check against the database (deactivated users lose access instantly). Memoized per request. */
+export const currentUser = cache(async (): Promise<SessionUser | null> => {
   const session = await readSession();
   if (!session) return null;
   const user = await prisma.user.findUnique({
@@ -85,7 +86,7 @@ export async function currentUser(): Promise<SessionUser | null> {
     role: user.systemRole,
     employeeId: user.employee?.id ?? null,
   };
-}
+});
 
 export class HttpError extends Error {
   constructor(public status: number, message: string) {

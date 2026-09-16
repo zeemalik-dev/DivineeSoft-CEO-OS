@@ -7,7 +7,7 @@ import { localDateOnly } from "@/lib/dates";
 import { canSeeEmployee } from "@/lib/auth/rbac";
 import { logger } from "@/lib/logger";
 
-export const runtime = "nodejs";
+
 
 export const POST = handler(async (req: Request) => {
   const user = await requireUser();

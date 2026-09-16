@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { localDayBounds, addDays } from "@/lib/dates";
-import { companyOverview, teamActivity, projectHealth } from "@/server/dashboard";
+import { companyOverview, teamActivity, projectHealth, type CompanyOverview, type TeamRow, type ProjectRow } from "@/server/dashboard";
 import type { TaskLine } from "@/lib/email/templates";
 
 const asLine = (t: {
@@ -57,12 +57,16 @@ export async function employeeDailyPayload(employeeId: string) {
 }
 
 /** Everything the CEO briefing needs, computed from the database alone. */
-export async function ceoBriefingData() {
+export async function ceoBriefingData(preloaded?: {
+  overview?: CompanyOverview;
+  team?: TeamRow[];
+  projects?: ProjectRow[];
+}) {
   const { start, end } = localDayBounds();
   const [overview, team, projects, ideas, problems, completed, pending] = await Promise.all([
-    companyOverview(),
-    teamActivity(),
-    projectHealth(),
+    preloaded?.overview ?? companyOverview(),
+    preloaded?.team ?? teamActivity(),
+    preloaded?.projects ?? projectHealth(),
     prisma.idea.findMany({ where: { createdAt: { gte: addDays(new Date(), -1) } }, take: 10 }),
     prisma.problem.findMany({
       where: { status: { not: "RESOLVED" } },

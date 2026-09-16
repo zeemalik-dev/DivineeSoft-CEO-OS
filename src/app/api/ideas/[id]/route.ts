@@ -3,7 +3,7 @@ import { requireUser } from "@/lib/auth/session";
 import { handler, ok } from "@/lib/api";
 import { z } from "zod";
 
-export const runtime = "nodejs";
+
 
 const schema = z.object({
   status: z.enum(["CAPTURED", "EXPLORING", "APPROVED", "PARKED", "DISCARDED", "SHIPPED"]).optional(),

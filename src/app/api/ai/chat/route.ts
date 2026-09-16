@@ -4,7 +4,7 @@ import { rateLimit } from "@/lib/ratelimit";
 import { runAssistant } from "@/lib/ai/agent";
 import { z } from "zod";
 
-export const runtime = "nodejs";
+
 export const maxDuration = 60;
 
 const schema = z.object({

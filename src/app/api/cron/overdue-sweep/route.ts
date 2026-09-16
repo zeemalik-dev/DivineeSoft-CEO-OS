@@ -3,7 +3,7 @@ import { assertCronAuth, runOnce } from "@/server/jobs/runner";
 import { runOverdueSweep } from "@/server/jobs/reminders";
 import { localDateKey } from "@/lib/dates";
 
-export const runtime = "nodejs";
+
 export const maxDuration = 120;
 
 export const GET = handler(async (req: Request) => {

@@ -3,7 +3,7 @@ import { handler, ok } from "@/lib/api";
 import { confirmAction, rejectAction } from "@/lib/ai/agent";
 import { z } from "zod";
 
-export const runtime = "nodejs";
+
 
 const schema = z.object({ decision: z.enum(["CONFIRM", "REJECT"]) });
 

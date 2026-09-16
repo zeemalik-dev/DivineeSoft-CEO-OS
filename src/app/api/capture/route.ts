@@ -6,7 +6,7 @@ import { handler, ok } from "@/lib/api";
 import { env } from "@/lib/env";
 import { audit } from "@/lib/audit";
 
-export const runtime = "nodejs";
+
 
 type Classification = {
   type: "IDEA" | "TASK" | "REMINDER" | "PROBLEM" | "GOAL";

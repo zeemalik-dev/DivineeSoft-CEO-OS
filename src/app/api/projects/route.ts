@@ -5,7 +5,7 @@ import { projectHealth } from "@/server/dashboard";
 import { audit } from "@/lib/audit";
 import { z } from "zod";
 
-export const runtime = "nodejs";
+
 
 export const GET = handler(async () => {
   await requireUser();

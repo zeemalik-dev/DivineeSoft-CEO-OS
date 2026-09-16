@@ -3,7 +3,7 @@ import { assertCronAuth, runOnce } from "@/server/jobs/runner";
 import { runDailyBriefing } from "@/server/jobs/dailyBriefing";
 import { localDateKey } from "@/lib/dates";
 
-export const runtime = "nodejs";
+
 export const maxDuration = 300;
 
 export const GET = handler(async (req: Request) => {

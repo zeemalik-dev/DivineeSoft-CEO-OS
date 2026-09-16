@@ -6,8 +6,6 @@ import { handler, ok, fail, clientIp } from "@/lib/api";
 import { rateLimit } from "@/lib/ratelimit";
 import { audit } from "@/lib/audit";
 
-export const runtime = "nodejs";
-
 export const POST = handler(async (req: Request) => {
   const ip = clientIp(req) ?? "unknown";
   rateLimit(`login:${ip}`, 10, 60_000);

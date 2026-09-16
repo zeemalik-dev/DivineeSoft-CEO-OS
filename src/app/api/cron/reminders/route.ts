@@ -2,7 +2,7 @@ import { handler, ok } from "@/lib/api";
 import { assertCronAuth } from "@/server/jobs/runner";
 import { runDueReminders, runDeadlineWarnings } from "@/server/jobs/reminders";
 
-export const runtime = "nodejs";
+
 export const maxDuration = 120;
 
 export const GET = handler(async (req: Request) => {

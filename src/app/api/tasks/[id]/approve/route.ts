@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { audit, emitActivity } from "@/lib/audit";
 import { z } from "zod";
 
-export const runtime = "nodejs";
+
 
 const schema = z.object({ decision: z.enum(["APPROVE", "REJECT"]) });
 

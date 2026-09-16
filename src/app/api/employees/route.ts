@@ -7,7 +7,7 @@ import { audit } from "@/lib/audit";
 import { z } from "zod";
 import { HttpError } from "@/lib/auth/session";
 
-export const runtime = "nodejs";
+
 
 export const GET = handler(async () => {
   const user = await requireUser();

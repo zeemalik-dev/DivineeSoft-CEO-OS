@@ -3,7 +3,7 @@ import { requireUser } from "@/lib/auth/session";
 import { reminderSchema } from "@/lib/validation";
 import { handler, ok } from "@/lib/api";
 
-export const runtime = "nodejs";
+
 
 export const GET = handler(async () => {
   const user = await requireUser();

@@ -4,7 +4,7 @@ import { handler, ok } from "@/lib/api";
 import { applyTaskChange, loadTaskForEdit } from "@/server/tasks";
 import { prisma } from "@/lib/db";
 
-export const runtime = "nodejs";
+
 
 type Ctx = { params: Promise<{ id: string }> };
 

@@ -4,7 +4,7 @@ import { problemSchema } from "@/lib/validation";
 import { handler, ok } from "@/lib/api";
 import { audit, emitActivity } from "@/lib/audit";
 
-export const runtime = "nodejs";
+
 
 export const GET = handler(async () => {
   await requireUser();

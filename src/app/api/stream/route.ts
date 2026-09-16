@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { currentUser } from "@/lib/auth/session";
 
-export const runtime = "nodejs";
+
 export const dynamic = "force-dynamic";
 
 /**

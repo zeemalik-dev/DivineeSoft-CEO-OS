@@ -4,8 +4,6 @@ import { eventSchema } from "@/lib/validation";
 import { handler, ok } from "@/lib/api";
 import { addDays } from "@/lib/dates";
 
-export const runtime = "nodejs";
-
 export const GET = handler(async (req: Request) => {
   const user = await requireUser();
   const url = new URL(req.url);

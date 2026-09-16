@@ -3,7 +3,7 @@ import { visibleEmployeeIds } from "@/lib/auth/rbac";
 import { companyOverview, teamActivity, projectHealth, recentActivity, openRisks } from "@/server/dashboard";
 import { handler, ok } from "@/lib/api";
 
-export const runtime = "nodejs";
+
 
 export const GET = handler(async () => {
   const user = await requireUser();

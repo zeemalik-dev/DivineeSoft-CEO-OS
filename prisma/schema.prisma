@@ -198,6 +198,9 @@ model Task {
   @@index([dueDate])
   @@index([scheduledFor])
   @@index([approvalState])
+  @@index([createdById])
+  @@index([kind, status, approvalState])
+  @@index([status, kind])
 }
 
 enum TaskUpdateType {
@@ -295,6 +298,7 @@ model Problem {
   solutions    Solution[]
 
   @@index([status, severity])
+  @@index([status, severity, createdAt])
 }
 
 model Solution {

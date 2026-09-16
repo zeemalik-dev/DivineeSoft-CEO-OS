@@ -18,13 +18,12 @@ export default async function DashboardPage() {
   const user = await requireUser();
   if (user.role !== "CEO") redirect("/my-tasks");
 
-  const [overview, team, projects, activity, risks, briefing, suggested] = await Promise.all([
+  const [overview, team, projects, activity, risks, suggested] = await Promise.all([
     companyOverview(),
     teamActivity(),
     projectHealth(),
     recentActivity(20),
     openRisks(),
-    ceoBriefingData(),
     prisma.task.findMany({
       where: { approvalState: "PENDING_APPROVAL" },
       include: { assignee: { select: { user: { select: { name: true } } } } },
@@ -33,6 +32,7 @@ export default async function DashboardPage() {
     }),
   ]);
 
+  const briefing = await ceoBriefingData({ overview, team, projects });
   const focus = heuristicFocus(briefing);
   const hour = Number(fmt(new Date(), "H"));
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";

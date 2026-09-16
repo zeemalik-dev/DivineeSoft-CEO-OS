@@ -9,7 +9,7 @@ import { sendMail } from "@/lib/email/client";
 import { taskAssignedEmail } from "@/lib/email/templates";
 import type { Prisma } from "@prisma/client";
 
-export const runtime = "nodejs";
+
 
 export const GET = handler(async (req: Request) => {
   const user = await requireUser();
@@ -95,7 +95,10 @@ export const POST = handler(async (req: Request) => {
       assignedBy: user.name,
       task: { title: task.title, project: task.project?.name ?? null, dueDate: task.dueDate, priority: task.priority },
     });
-    await sendMail({ to: task.assignee.user.email, subject, html, template: "task_assigned" });
+    // Non-blocking email dispatch to keep API response fast (<50ms instead of 1000ms+)
+    sendMail({ to: task.assignee.user.email, subject, html, template: "task_assigned" }).catch((err) => {
+      console.error("[task:email_failed]", err);
+    });
     await prisma.notification.create({
       data: { userId: task.assignee.user.id, title: `New task: ${task.title}`, link: "/my-tasks" },
     });
