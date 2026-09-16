@@ -4,7 +4,7 @@
   --color-paper: #eef1ed;
   --color-surface: #ffffff;
   --color-sunk: #f5f7f3;
-  --color-ink: #16202b;
+  --color-ink: #16202b !important;
   --color-muted: #63706b;
   --color-rule: #cfd4cc;
   --color-accent: #1552f3;
@@ -27,7 +27,7 @@ html {
     --color-paper: #101817;
     --color-surface: #17211f;
     --color-sunk: #1d2a27;
-    --color-ink: #e8f0eb;
+    --color-ink: #e8f0ec;
     --color-muted: #9aada5;
     --color-rule: #344640;
     --color-accent: #6f91ff;
@@ -54,7 +54,7 @@ html {
   --color-paper: #101817;
   --color-surface: #17211f;
   --color-sunk: #1d2a27;
-  --color-ink: #e8f0eb;
+  --color-ink: #e8f0ec;
   --color-muted: #9aada5;
   --color-rule: #344640;
   --color-accent: #6f91ff;
@@ -368,3 +368,356 @@ body {
   .login-panel { place-items: start center; padding-top: 40px; }
   .login-mobile-brand { display: flex; }
 }
+
+
+:root[data-theme="dark"] .btn-primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #ffffff;
+}
+
+:root[data-theme="dark"] .btn-primary:hover:not(:disabled) {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-paper);
+}
+
+/* ─── App shell layout ─────────────────────────────── */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-body {
+  display: flex;
+  flex: 1;
+}
+
+.app-sidebar {
+  width: 180px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--color-rule);
+  background: var(--color-surface);
+}
+
+.app-sidebar-inner {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+  padding: 28px 32px;
+}
+
+@media (max-width: 767px) {
+  .app-sidebar { display: none; }
+  .app-main { padding: 20px 16px; }
+}
+
+/* ─── Top Header ─────────────────────────────────────── */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 52px;
+  padding: 0 20px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-rule);
+  backdrop-filter: blur(8px);
+}
+
+.app-header-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  min-width: 0;
+}
+
+.app-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.app-header-company {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-ink);
+  white-space: nowrap;
+}
+
+.app-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.app-header-nav::-webkit-scrollbar { display: none; }
+
+.app-header-link {
+  white-space: nowrap;
+  padding: 5px 10px;
+  font-size: 13px;
+  color: var(--color-muted);
+  border-radius: 4px;
+  text-decoration: none;
+  transition: color 150ms, background 150ms;
+}
+.app-header-link:hover {
+  color: var(--color-ink);
+  background: var(--color-sunk);
+}
+
+.app-header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ─── Icon button (bell) ─── */
+.app-header-icon-wrap {
+  position: relative;
+}
+
+.app-header-icon-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+}
+.app-header-icon-btn:hover {
+  background: var(--color-sunk);
+  color: var(--color-ink);
+}
+
+.app-notif-badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* ─── Avatar button ─── */
+.app-avatar-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.02em;
+  transition: opacity 150ms;
+}
+.app-avatar-btn:hover { opacity: 0.85; }
+
+/* ─── Shared dropdown ─── */
+.app-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 200;
+  background: var(--color-surface);
+  border: 1px solid var(--color-rule);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  overflow: hidden;
+  animation: dropIn 150ms ease;
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Notification dropdown ─── */
+.notif-dropdown { width: 340px; }
+
+.notif-dropdown-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.notif-dropdown-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.notif-mark-all {
+  font-size: 11px;
+  color: var(--color-accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.notif-mark-all:hover { text-decoration: underline; }
+
+.notif-empty {
+  padding: 24px 16px;
+  font-size: 13px;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.notif-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.notif-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 11px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--color-rule);
+  transition: background 120ms;
+}
+.notif-item:last-child { border-bottom: none; }
+.notif-item:hover { background: var(--color-sunk); }
+
+.notif-unread {
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+}
+
+.notif-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.notif-item-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-ink);
+  flex: 1;
+}
+
+.notif-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.notif-item-body {
+  font-size: 12px;
+  color: var(--color-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.notif-item-time {
+  font-size: 11px;
+  color: var(--color-muted);
+  margin-top: 2px;
+}
+
+/* ─── Profile dropdown ─── */
+.profile-dropdown { width: 220px; }
+
+.profile-dropdown-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.profile-avatar-lg {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink);
+  margin: 0;
+}
+
+.profile-role {
+  font-size: 11px;
+  color: var(--color-muted);
+  margin: 2px 0 0;
+}
+
+.profile-dropdown-divider {
+  height: 1px;
+  background: var(--color-rule);
+}
+
+.profile-signout-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 16px;
+  font-size: 13px;
+  color: var(--color-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: color 150ms, background 150ms;
+}
+.profile-signout-btn:hover {
+  color: var(--color-blocked);
+  background: var(--color-sunk);
+}
