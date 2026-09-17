@@ -5,7 +5,7 @@ import { env } from "@/lib/env";
 import { fmt } from "@/lib/dates";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { HeaderBar } from "@/components/HeaderBar";
-import Link from "next/link";
+import { SidebarNav } from "@/components/SidebarNav";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await currentUser();
@@ -29,19 +29,26 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="app-shell">
+      {/* Header — only brand + notifications + avatar, no nav */}
       <HeaderBar
         userName={user.name}
         userRole={user.role}
         unreadCount={unread}
-        links={links}
+        links={[] /* nav moved to sidebar */}
         companyName={env.companyName}
         companyLogoSrc="/assets/divineesoft-mark.png"
       />
       <div className="app-body">
-        {/* Slim sidebar — only date + theme toggle remain */}
+        {/* Sidebar — nav + date + theme toggle */}
         <aside className="app-sidebar">
           <div className="app-sidebar-inner">
-            <p className="text-xs text-muted mt-1">{fmt(new Date(), "EEEE d MMMM")}</p>
+            {/* Nav links */}
+            <SidebarNav links={links} />
+            {/* Divider */}
+            <div className="app-sidebar-divider" />
+            {/* Date */}
+            <p className="app-sidebar-date">{fmt(new Date(), "EEEE d MMMM")}</p>
+            {/* Theme toggle */}
             <ThemeToggle />
           </div>
         </aside>

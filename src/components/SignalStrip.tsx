@@ -1,4 +1,4 @@
-import type { CompanyOverview } from "@/server/dashboard";
+import type { CompanyOverview } from "@/redux/api/dashboardApi";
 import Link from "next/link";
 
 const ORDER: { key: keyof CompanyOverview; label: string; href: string; alert?: boolean }[] = [

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useUpdateTaskMutation } from "@/redux/api/tasksApi";
 import { Progress, statusLabel } from "@/components/ui";
 
 export type BoardTask = {
@@ -33,35 +33,25 @@ const NEXT_ACTIONS: Record<string, { label: string; status: string }[]> = {
 };
 
 export function TaskBoard({ tasks }: { tasks: BoardTask[] }) {
-  const router = useRouter();
-  const [, startTransition] = useTransition();
+  const [updateTask, { isLoading: isMutating }] = useUpdateTaskMutation();
   const [openId, setOpenId] = useState<string | null>(null);
-  const [busy, setBusy] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
   const [comment, setComment] = useState("");
   const [blocker, setBlocker] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   async function patch(id: string, body: Record<string, unknown>) {
-    setBusy(id);
+    setBusyId(id);
     setError(null);
     try {
-      const res = await fetch(`/api/tasks/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error ?? "Could not update this task.");
-        return;
-      }
+      await updateTask({ id, body }).unwrap();
+      // RTK invalidates "Task" tag → useGetMyTasksQuery auto-refetches
       setComment("");
       setBlocker("");
-      startTransition(() => router.refresh());
-    } catch {
-      setError("Could not reach the server. The task was not changed.");
+    } catch (err: any) {
+      setError(err?.data?.error ?? "Could not update this task.");
     } finally {
-      setBusy(null);
+      setBusyId(null);
     }
   }
 
@@ -75,6 +65,7 @@ export function TaskBoard({ tasks }: { tasks: BoardTask[] }) {
       <ul className="divide-y divide-rule">
       {tasks.map((task) => {
         const open = openId === task.id;
+        const busy = busyId === task.id;
         return (
           <li key={task.id} className="px-[18px] py-4">
             <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -113,7 +104,7 @@ export function TaskBoard({ tasks }: { tasks: BoardTask[] }) {
                 <button
                   key={action.status}
                   className="btn"
-                  disabled={busy === task.id}
+                  disabled={busy || isMutating}
                   onClick={() => patch(task.id, { status: action.status })}
                 >
                   {action.label}
@@ -122,7 +113,7 @@ export function TaskBoard({ tasks }: { tasks: BoardTask[] }) {
               {task.status !== "COMPLETED" && (
                 <button
                   className="btn btn-primary"
-                  disabled={busy === task.id}
+                  disabled={busy || isMutating}
                   onClick={() => patch(task.id, { status: "COMPLETED" })}
                 >
                   Mark complete
@@ -147,7 +138,7 @@ export function TaskBoard({ tasks }: { tasks: BoardTask[] }) {
                         key={value}
                         id={`progress-${task.id}`}
                         className="btn"
-                        disabled={busy === task.id}
+                        disabled={busy || isMutating}
                         onClick={() => patch(task.id, { progress: value, status: "IN_PROGRESS" })}
                       >
                         {value}%
@@ -170,7 +161,7 @@ export function TaskBoard({ tasks }: { tasks: BoardTask[] }) {
                   />
                   <button
                     className="btn mt-2"
-                    disabled={!comment.trim() || busy === task.id}
+                    disabled={!comment.trim() || busy || isMutating}
                     onClick={() => patch(task.id, { comment })}
                   >
                     Save comment
@@ -190,7 +181,7 @@ export function TaskBoard({ tasks }: { tasks: BoardTask[] }) {
                   />
                   <button
                     className="btn mt-2"
-                    disabled={!blocker.trim() || busy === task.id}
+                    disabled={!blocker.trim() || busy || isMutating}
                     onClick={() => patch(task.id, { status: "BLOCKED", blockerNote: blocker })}
                   >
                     Flag as blocked

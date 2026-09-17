@@ -1,6 +1,5 @@
-import type { ProjectRow } from "@/server/dashboard";
+import type { ProjectRow } from "@/redux/api/dashboardApi";
 import { Progress, Status } from "@/components/ui";
-import { fmt } from "@/lib/dates";
 
 export function ProjectTable({ rows }: { rows: ProjectRow[] }) {
   const sorted = [...rows].sort(
@@ -34,7 +33,7 @@ export function ProjectTable({ rows }: { rows: ProjectRow[] }) {
               <td className="px-3 py-2.5">{row.openTasks}</td>
               <td className={`px-3 py-2.5 ${row.overdueTasks ? "text-blocked" : ""}`}>{row.overdueTasks}</td>
               <td className="px-3 py-2.5 text-muted">{row.lead ?? "—"}</td>
-              <td className="px-[18px] py-2.5 text-muted">{row.dueDate ? fmt(row.dueDate, "d MMM") : "—"}</td>
+              <td className="px-[18px] py-2.5 text-muted">{row.dueDate ? new Date(row.dueDate).toLocaleDateString([], { day: "numeric", month: "short" }) : "—"}</td>
             </tr>
           ))}
         </tbody>

@@ -1,9 +1,23 @@
-import type { TeamRow } from "@/server/dashboard";
 import { Progress, Status } from "@/components/ui";
 import { relative } from "@/lib/dates";
 import Link from "next/link";
 
-export function TeamRoster({ rows }: { rows: TeamRow[] }) {
+// Compatible with both server TeamRow (Date) and client API TeamRow (string)
+type Row = {
+  employeeId: string;
+  name: string;
+  title: string;
+  currentProject: string | null;
+  currentTask: string | null;
+  taskStatus: string;
+  progress: number;
+  lastUpdateAt: Date | string | null;
+  blocker: string | null;
+  openTasks: number;
+  overdueTasks: number;
+};
+
+export function TeamRoster({ rows }: { rows: Row[] }) {
   return (
     <div className="divide-y divide-rule">
       {rows.map((row) => (
@@ -25,7 +39,7 @@ export function TeamRoster({ rows }: { rows: TeamRow[] }) {
                 <p className="truncate text-sm">{row.currentTask}</p>
                 <p className="mt-0.5 text-xs text-muted">
                   {row.currentProject ?? "No project"} · <Status value={row.taskStatus} /> · {row.progress}% ·{" "}
-                  {relative(row.lastUpdateAt)}
+                  {relative(row.lastUpdateAt ? new Date(row.lastUpdateAt) : null)}
                 </p>
                 <div className="mt-2">
                   <Progress
