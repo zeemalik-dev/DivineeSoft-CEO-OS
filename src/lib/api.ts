@@ -11,7 +11,6 @@ export function fail(status: number, message: string, extra?: unknown) {
   return NextResponse.json({ error: message, details: extra ?? null }, { status });
 }
 
-/** Wraps a route handler so thrown errors become clean JSON instead of 500s. */
 export function handler<A extends unknown[]>(fn: (...args: A) => Promise<Response>) {
   return async (...args: A): Promise<Response> => {
     const routeName = fn.name || "anonymous-handler";
