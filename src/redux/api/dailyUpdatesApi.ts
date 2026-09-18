@@ -1,7 +1,5 @@
 import { baseApi } from "@/redux/baseApi";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 export type DailyUpdate = {
   id: string;
   didToday: string;
@@ -16,11 +14,8 @@ export type SaveDailyUpdateBody = {
   blockers?: string;
 };
 
-// ─── API ──────────────────────────────────────────────────────────────────────
-
 export const dailyUpdatesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // Get today's update for the current user
     getTodayUpdate: builder.query<{ update: DailyUpdate | null }, void>({
       query: () => "/daily-updates",
       transformResponse: (response: { updates: DailyUpdate[] }) => ({
