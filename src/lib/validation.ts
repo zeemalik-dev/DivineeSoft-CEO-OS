@@ -11,6 +11,41 @@ export const taskStatus = z.enum([
 export const priority = z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]);
 export const severity = priority;
 
+export const projectStatus = z.enum([
+  "PLANNING",
+  "ACTIVE",
+  "ON_HOLD",
+  "BLOCKED",
+  "COMPLETED",
+  "ARCHIVED",
+]);
+
+export const createProjectSchema = z.object({
+  name: z.string().min(2, "Project name must be at least 2 characters.").max(100),
+  description: z.string().max(5000).optional(),
+  platforms: z.array(z.string().max(50)).default([]),
+  status: projectStatus.default("ACTIVE"),
+  healthNote: z.string().max(1000).optional(),
+  leadId: z.string().cuid().nullish(),
+  managerId: z.string().cuid().nullish(),
+  startedAt: z.coerce.date().nullish(),
+  dueDate: z.coerce.date().nullish(),
+  memberIds: z.array(z.string().cuid()).default([]),
+});
+
+export const updateProjectSchema = z.object({
+  name: z.string().min(2).max(100).optional(),
+  description: z.string().max(5000).nullish(),
+  platforms: z.array(z.string().max(50)).optional(),
+  status: projectStatus.optional(),
+  healthNote: z.string().max(1000).nullish(),
+  leadId: z.string().cuid().nullish(),
+  managerId: z.string().cuid().nullish(),
+  startedAt: z.coerce.date().nullish(),
+  dueDate: z.coerce.date().nullish(),
+  memberIds: z.array(z.string().cuid()).optional(),
+});
+
 export const loginSchema = z.object({
   email: z.string().email("Enter a valid email address."),
   password: z.string().min(1, "Enter your password."),

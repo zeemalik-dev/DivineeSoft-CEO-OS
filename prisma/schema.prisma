@@ -182,7 +182,7 @@ model Task {
   approvedAt    DateTime?
 
   projectId   String?
-  project     Project?  @relation(fields: [projectId], references: [id])
+  project     Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
   assigneeId  String?
   assignee    Employee? @relation("TaskAssignee", fields: [assigneeId], references: [id])
   createdById String

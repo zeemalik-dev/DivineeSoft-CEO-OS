@@ -58,3 +58,12 @@ export async function canEditTask(
 export function isManagerOrAbove(user: SessionUser) {
   return user.role === "CEO" || user.role === "MANAGER";
 }
+
+export function canManageProject(user: SessionUser) {
+  return user.role === "CEO" || user.role === "MANAGER";
+}
+
+export function canDeleteProject(user: SessionUser) {
+  return user.role === "CEO";
+}
+
